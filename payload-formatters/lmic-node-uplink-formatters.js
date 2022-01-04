@@ -4,24 +4,18 @@
  * 
  *  Function:     LMIC-node uplink payload formatter JavaScript function(s).
  * 
- *  Author:       Leonel Lopes Parente
+ *  Author:       Johan  Scheepers
  * 
  *  Description:  These function(s) are for use with The Things Network V3. 
  *                 
  ******************************************************************************/
 
-function decodeUplink(input) {
-    var data = {};
-    var warnings = [];
+ function Decoder(bytes, port) {
 
-    if (input.fPort == 10) {
-        data.counter = (input.bytes[0] << 8) + input.bytes[1];
-    }
-    else {
-        warnings.push("Unsupported fPort");
-    }
+    var tempA = (bytes[0] & 0x80 ? 0xFFFF<<16 : 0) | bytes[0]<<8 | bytes[1];
+    var reed = bytes[2];
     return {
-        data: data,
-        warnings: warnings
+      celciusA: tempA / 100,
+      door: reed
     };
-}
+  }

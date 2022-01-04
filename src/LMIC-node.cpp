@@ -694,20 +694,20 @@ lmic_tx_error_t scheduleUplink(uint8_t fPort, uint8_t* data, uint8_t dataLength,
 #include <DallasTemperature.h>
 #include <OneWire.h>
 
-static volatile uint16_t counter_ = 0;
+const byte oneWireAPin = 10;
+const int buttonPin = 11;
+const int greenLed = 12;
 
-uint16_t getCounterValue()
-{
-    // Increments counter and returns the new value.
-    delay(50);         // Fake this takes some time
-    return ++counter_;
-}
+int buttonState = 0;
 
-
-
+OneWire oneWireA (oneWireAPin) ;
+DallasTemperature sensorsA (&oneWireA) ;
+DeviceAddress thermometerA;
 
 void processWork(ostime_t doWorkJobTimeStamp)
 {
+        //attachInterrupt(0,theInterrupt,RISING);
+        //attachInterrupt(1,theInterrupt,FALLING);
     // This function is called from the doWorkCallback() 
     // callback function when the doWork job is executed.
 
@@ -725,8 +725,26 @@ void processWork(ostime_t doWorkJobTimeStamp)
         // The counter is increased automatically by getCounterValue()
         // and can be reset with a 'reset counter' command downlink message.
 
-        uint16_t counterValue = getCounterValue();
         ostime_t timestamp = os_getTime();
+
+        Serial.begin(9600);
+
+        //Sensor A measure
+            sensorsA.begin();
+            sensorsA.getAddress(thermometerA, 0);
+            sensorsA.setResolution(thermometerA, 12);
+            sensorsA.requestTemperatures();
+            float tempA = sensorsA.getTempC(thermometerA);
+            int16_t int16_temperatureA;
+            int16_temperatureA = 100*tempA;
+
+            pinMode(buttonPin, INPUT_PULLUP);
+            int16_t int16_reedSwitch;
+
+            buttonState = digitalRead(buttonPin);
+            int16_reedSwitch = buttonState;
+
+
 
         #ifdef USE_DISPLAY
             // Interval and Counter values are combined on a single row.
@@ -743,8 +761,11 @@ void processWork(ostime_t doWorkJobTimeStamp)
         #ifdef USE_SERIAL
             printEvent(timestamp, "Input data collected", PrintTarget::Serial);
             printSpaces(serial, MESSAGE_INDENT);
-            serial.print(F("COUNTER value: "));
-            serial.println(counterValue);
+            Serial.println("");
+            Serial.print("sensorsA : ");
+            Serial.println(tempA);
+            Serial.print("Reed Switch :");
+            Serial.println(buttonState);
         #endif    
 
         // For simplicity LMIC-node will try to send an uplink
@@ -765,9 +786,11 @@ void processWork(ostime_t doWorkJobTimeStamp)
         {
             // Prepare uplink payload.
             uint8_t fPort = 10;
-            payloadBuffer[0] = counterValue >> 8;
-            payloadBuffer[1] = counterValue & 0xFF;
-            uint8_t payloadLength = 2;
+            payloadBuffer[0] = int16_temperatureA >> 8;
+            payloadBuffer[1] = int16_temperatureA;
+            payloadBuffer[2] = int16_reedSwitch;
+
+            uint8_t payloadLength = 3;
 
             scheduleUplink(fPort, payloadBuffer, payloadLength);
         }
@@ -784,6 +807,7 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
     // To send the reset counter command to the node, send a downlink message
     // (e.g. from the TTN Console) with single byte value resetCmd on port cmdPort.
 
+    #define OnboardLed 13
     const uint8_t cmdPort = 100;
     const uint8_t resetCmd= 0xC0;
 
@@ -794,8 +818,19 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
             serial.println(F("Reset cmd received"));
         #endif
         ostime_t timestamp = os_getTime();
+
+        pinMode(OnboardLed, OUTPUT);
+        pinMode(greenLed, OUTPUT);
+
+        digitalWrite(OnboardLed, HIGH);
+        delay(1000);
+        digitalWrite(OnboardLed, LOW);
+        delay(1000);
+        digitalWrite(greenLed, HIGH);
+        delay(30000);
+        digitalWrite(greenLed, LOW);
         
-        printEvent(timestamp, "Counter reset", PrintTarget::All, false);
+        //printEvent(timestamp, "Counter reset", PrintTarget::All, false);
     }          
 }
 
