@@ -43,7 +43,7 @@
  *                NSS   <――――――――――>   8
  *                RST   <――――――――――>   4
  *                DIO0  <――――――――――>   7
- *                DIO1  <---------->   5  ██ NOT WIRED on PCB for versions < 1.3 ██
+ *                DIO1  <---------->   6  ██ NOT WIRED on PCB for versions < 1.3 ██
  *                DIO2                 -  Not needed for LoRa
  * 
  *  Docs:         https://docs.platformio.org/en/latest/boards/atmelavr/lora32u4II.html
