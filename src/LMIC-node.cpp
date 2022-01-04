@@ -58,7 +58,7 @@
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
 
-const uint8_t payloadBufferLength = 4;    // Adjust to fit max payload length
+const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
 
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
@@ -691,6 +691,9 @@ lmic_tx_error_t scheduleUplink(uint8_t fPort, uint8_t* data, uint8_t dataLength,
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
 
+#include <DallasTemperature.h>
+#include <OneWire.h>
+
 static volatile uint16_t counter_ = 0;
 
 uint16_t getCounterValue()
@@ -700,11 +703,7 @@ uint16_t getCounterValue()
     return ++counter_;
 }
 
-void resetCounter()
-{
-    // Reset counter to 0
-    counter_ = 0;
-}
+
 
 
 void processWork(ostime_t doWorkJobTimeStamp)
@@ -795,7 +794,7 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
             serial.println(F("Reset cmd received"));
         #endif
         ostime_t timestamp = os_getTime();
-        resetCounter();
+        
         printEvent(timestamp, "Counter reset", PrintTarget::All, false);
     }          
 }
@@ -847,7 +846,7 @@ void setup()
 
     // Place code for initializing sensors etc. here.
 
-    resetCounter();
+    
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▀ █ █ █ █
