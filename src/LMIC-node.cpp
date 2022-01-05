@@ -51,25 +51,27 @@
  ******************************************************************************/
 
 #include "LMIC-node.h"
-#include <DallasTemperature.h>
-#include <OneWire.h>
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▄ █▀▀ █▀▀ ▀█▀ █▀█
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▄ █▀▀ █ █  █  █ █
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
-
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
 const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
 
-const byte oneWireAPin = 10;
-const int buttonPin = 11;
-const int greenLed = 12;
+// const byte oneWireAPin = 10;
+// const int buttonPin = 11;
+// const int greenLed = 12;
 
-const int sensor1Pin = 2;  //interupt
-bool accelWoke = false;  //interupt
+#define oneWireAPin 10
+#define buttonPin 2
+#define greenLed 12
+#define BounceInterval  15		// Number of ms to allow for debouncing
 
 int buttonState = 0;
-
+volatile unsigned long contactBounceTime;
+volatile unsigned long rotations;
 
 OneWire oneWireA (oneWireAPin) ;
 DallasTemperature sensorsA (&oneWireA) ;
@@ -707,23 +709,13 @@ lmic_tx_error_t scheduleUplink(uint8_t fPort, uint8_t* data, uint8_t dataLength,
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
 
-// #include <DallasTemperature.h>
-// #include <OneWire.h>
+void isr_rotation ()   {
 
-// const byte oneWireAPin = 10;
-// const int buttonPin = 11;
-// const int greenLed = 12;
-
-// const int sensor1Pin = 2;  //interupt
-// const int sensor2Pin = 3;  //interupt
-// bool accelWoke = false;  //interupt
-
-// int buttonState = 0;
-
-
-// OneWire oneWireA (oneWireAPin) ;
-// DallasTemperature sensorsA (&oneWireA) ;
-// DeviceAddress thermometerA;
+    if ((millis() - contactBounceTime) > BounceInterval ) {  // debounce the switch contact.
+        rotations++;
+        contactBounceTime = millis();
+    }
+}
 
 void processWork(ostime_t doWorkJobTimeStamp)
 {
@@ -843,12 +835,11 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
         pinMode(greenLed, OUTPUT);
 
         digitalWrite(OnboardLed, HIGH);
-        delay(1000);
-        digitalWrite(OnboardLed, LOW);
-        delay(1000);
         digitalWrite(greenLed, HIGH);
-        delay(30000);
+        delay(10000);
+        digitalWrite(OnboardLed, LOW);
         digitalWrite(greenLed, LOW);
+        delay(100);
         
         //printEvent(timestamp, "Counter reset", PrintTarget::All, false);
     }          
@@ -858,15 +849,6 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▀ █ █ █ █
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀▀ ▀ ▀ ▀▀ 
-
-
-void accelWakeup() {  //interupt
-  delay(10);  //interupt
-  if (digitalRead(sensor1Pin) == HIGH) {  //interupt
-    accelWoke = true;  //interupt
-    Serial.println("accel woke");  //interupt
-  }  //interupt
-}  //interupt
 
 void setup() 
 {
@@ -901,16 +883,17 @@ void setup()
         abort();
     }
 
+    pinMode(buttonPin, INPUT);
+
+	attachInterrupt(digitalPinToInterrupt(buttonPin), isr_rotation, FALLING);
+
     initLmic();
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▄ █▀▀ █▀▀ ▀█▀ █▀█
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▄ █▀▀ █ █  █  █ █
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
-    // Place code for initializing sensors etc. here.
-    pinMode(sensor1Pin, INPUT_PULLUP); //interupt
-    accelWoke = false;
-    attachInterrupt(sensor1Pin,accelWakeup,RISING);
+
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▀ █ █ █ █
