@@ -60,18 +60,14 @@
 
 const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
 
-// const byte oneWireAPin = 10;
-// const int buttonPin = 11;
-// const int greenLed = 12;
 
 #define oneWireAPin 10
 #define buttonPin 2
 #define greenLed 12
-#define BounceInterval  15		// Number of ms to allow for debouncing
+
 
 int buttonState = 0;
-volatile unsigned long contactBounceTime;
-volatile unsigned long rotations;
+volatile byte state = LOW;
 
 OneWire oneWireA (oneWireAPin) ;
 DallasTemperature sensorsA (&oneWireA) ;
@@ -709,12 +705,11 @@ lmic_tx_error_t scheduleUplink(uint8_t fPort, uint8_t* data, uint8_t dataLength,
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
 
-void isr_rotation ()   {
-
-    if ((millis() - contactBounceTime) > BounceInterval ) {  // debounce the switch contact.
-        rotations++;
-        contactBounceTime = millis();
-    }
+void blink() {
+  state = ++state;
+    Serial.println("bink");
+  Serial.println(state);
+  delay(50);
 }
 
 void processWork(ostime_t doWorkJobTimeStamp)
@@ -883,9 +878,9 @@ void setup()
         abort();
     }
 
-    pinMode(buttonPin, INPUT);
+    //pinMode(buttonPin, INPUT);
 
-	attachInterrupt(digitalPinToInterrupt(buttonPin), isr_rotation, FALLING);
+	attachInterrupt(digitalPinToInterrupt(buttonPin), blink, CHANGE);
 
     initLmic();
 
