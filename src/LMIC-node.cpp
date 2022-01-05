@@ -51,7 +51,8 @@
  ******************************************************************************/
 
 #include "LMIC-node.h"
-
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▄ █▀▀ █▀▀ ▀█▀ █▀█
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▄ █▀▀ █ █  █  █ █
@@ -59,6 +60,21 @@
 
 
 const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
+
+const byte oneWireAPin = 10;
+const int buttonPin = 11;
+const int greenLed = 12;
+
+const int sensor1Pin = 2;  //interupt
+bool accelWoke = false;  //interupt
+
+int buttonState = 0;
+
+
+OneWire oneWireA (oneWireAPin) ;
+DallasTemperature sensorsA (&oneWireA) ;
+DeviceAddress thermometerA;
+
 
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
@@ -691,25 +707,23 @@ lmic_tx_error_t scheduleUplink(uint8_t fPort, uint8_t* data, uint8_t dataLength,
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
 
-#include <DallasTemperature.h>
-#include <OneWire.h>
+// #include <DallasTemperature.h>
+// #include <OneWire.h>
 
-const byte oneWireAPin = 10;
-const int buttonPin = 11;
-const int greenLed = 12;
+// const byte oneWireAPin = 10;
+// const int buttonPin = 11;
+// const int greenLed = 12;
 
-const int sensor1Pin = 2;  //interupt
-const int sensor2Pin = 3;  //interupt
-bool accelWoke = false;  //interupt
+// const int sensor1Pin = 2;  //interupt
+// const int sensor2Pin = 3;  //interupt
+// bool accelWoke = false;  //interupt
 
-int buttonState = 0;
+// int buttonState = 0;
 
-       // attachInterrupt(0,processWork,RISING);
-        //attachInterrupt(1,processWork,FALLING);
 
-OneWire oneWireA (oneWireAPin) ;
-DallasTemperature sensorsA (&oneWireA) ;
-DeviceAddress thermometerA;
+// OneWire oneWireA (oneWireAPin) ;
+// DallasTemperature sensorsA (&oneWireA) ;
+// DeviceAddress thermometerA;
 
 void processWork(ostime_t doWorkJobTimeStamp)
 {
@@ -848,7 +862,7 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
 
 void accelWakeup() {  //interupt
   delay(10);  //interupt
-  if (digitalRead(sensor1Pin) == HIGH || digitalRead(sensor2Pin) == HIGH) {  //interupt
+  if (digitalRead(sensor1Pin) == HIGH) {  //interupt
     accelWoke = true;  //interupt
     Serial.println("accel woke");  //interupt
   }  //interupt
@@ -895,10 +909,8 @@ void setup()
 
     // Place code for initializing sensors etc. here.
     pinMode(sensor1Pin, INPUT_PULLUP); //interupt
-    pinMode(sensor2Pin, INPUT_PULLUP); //interupt
     accelWoke = false;
     attachInterrupt(sensor1Pin,accelWakeup,RISING);
-    attachInterrupt(sensor2Pin,accelWakeup,RISING);
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▀ █ █ █ █
