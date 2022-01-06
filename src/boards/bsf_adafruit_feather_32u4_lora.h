@@ -14,8 +14,8 @@
  *                It supports automatic firmware upload and serial over USB.
  *                No onboard display. Optionally an external display con be connected.
  * 
- *                ██ DIO1 MUST BE MANUALLY WIRED TO GPIO6 for versions < 1.3 (see below) ██
- *                   For version 1.3 (see label on PCB) DIO1 is already wired on PCB.
+ *                ██ DIO1 MUST BE MANUALLY WIRED TO GPIO6 ██
+ *                   
  * 
  *                On versions 1.0 and 1.1 DIO1 is available as a separate pin. On
  *                version 1.2 DIO1 is available on a solder pad (from a solder jumper) 

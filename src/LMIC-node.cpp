@@ -64,6 +64,7 @@ const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
 #define oneWireAPin 10
 #define buttonPin 2
 #define greenLed 12
+#define VBATPIN A7
 
 int downlink = 0;
 int buttonState = 0;
@@ -751,7 +752,10 @@ void processWork(ostime_t doWorkJobTimeStamp)
             buttonState = digitalRead(buttonPin);
             int16_reedSwitch = buttonState;
 
-
+            float measuredvbat = analogRead(VBATPIN);
+            measuredvbat *= 2;    // we divided by 2, so multiply back
+            measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
+            measuredvbat /= 1024; // convert to voltage
 
         #ifdef USE_DISPLAY
             // Interval and Counter values are combined on a single row.
@@ -773,6 +777,8 @@ void processWork(ostime_t doWorkJobTimeStamp)
             Serial.println(tempA);
             Serial.print("Reed Switch :");
             Serial.println(buttonState);
+            Serial.print("VBat: " );
+            Serial.println(measuredvbat);
         #endif    
 
         // For simplicity LMIC-node will try to send an uplink
