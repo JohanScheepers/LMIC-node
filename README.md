@@ -1,23 +1,30 @@
-
 # LMIC-node - Temperature reed switch and relay
+
+## Node - Adafruit Feather 32U4
 
 ### Up-Link - DS18B20, magnetic reed switch
 
-Temperature will be from a DS18B20 - This is for measuring the temperature insde a network cabinet.
+Temperature will be from a DS18B20 - This is for measuring the temperature inside a network cabinet.
 
 The magnetic reed switch is to monitor access to the network cabinet.
 
-
 ### Down-Link - Switching a relay
  
- A realy is needed to do hard restart on a IP camera.
+ A relay is needed to do hard restart on a IP camera.
 
+This repository, I have used the platformio.ini and deployed it on a Adafruit Feather 32U4 Lora and it joins the TTN application successfully and up and down links are working.
 
-
-This repository, I have used the platformio.ini and deployed it on a Adfruit Feather 32U4 Lora and it joins the TTN application successfully and up and down links are working.
-
-This repository contains LMIC-node, an example LoRaWAN application for a node for The Things Network.  
+This repository contains LMIC-node, kindly written by Leonel Lopes Parente, an example LoRaWAN application for a node for The Things Network.  
 Get your node quickly up and running with LMIC-node.
+
+## Node-Red - Dashboard
+
+The monitoring and control will be from a Node-Red dashboard.
+
+Grafana will be iframed in Node-Red for the graphical representation of the temperature and access data.
+
+The data will be stored in Influxdb.
+
 
 # LMIC-node
 
