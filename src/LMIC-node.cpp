@@ -65,7 +65,7 @@ const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
 #define buttonPin 2
 #define greenLed 12
 
-
+int downlink = 0;
 int buttonState = 0;
 volatile byte state = LOW;
 
@@ -831,10 +831,10 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
 
         digitalWrite(OnboardLed, HIGH);
         digitalWrite(greenLed, HIGH);
-        delay(10000);
+        delay(60000);
         digitalWrite(OnboardLed, LOW);
         digitalWrite(greenLed, LOW);
-        delay(100);
+        
         
         //printEvent(timestamp, "Counter reset", PrintTarget::All, false);
     }          
