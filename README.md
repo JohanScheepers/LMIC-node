@@ -1,12 +1,16 @@
-Interrupt.
 
-The interup will be from the rees switch.
+# LMIC-node - Temperature reed switch and relay
+
+### Up-Link - DS18B20, magnetic reed switch
+### Down-Link - Switching a relay
+
+The interup will be from the reed switch.
 
 Temperature will be from a DS18B20
 
 This repository, I have used the platformio.ini and deployed it on a Adfruit Feather 32U4 Lora and it joins the TTN application successfully and up and down links are working.
 
-The intension is to build a node with 3 temperature sensors and a interrupt if a reed switch makes contact.
+The intension is to build a node with 1 temperature sensors and a interrupt if a reed switch makes contact.
 
 
 This repository contains LMIC-node, an example LoRaWAN application for a node for The Things Network.  
