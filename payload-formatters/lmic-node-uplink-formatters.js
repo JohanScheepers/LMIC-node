@@ -10,12 +10,21 @@
  *                 
  ******************************************************************************/
 
- function Decoder(bytes, port) {
 
-    var tempA = (bytes[0] & 0x80 ? 0xFFFF<<16 : 0) | bytes[0]<<8 | bytes[1];
-    var reed = bytes[2];
-    return {
-      celciusA: tempA / 100,
-      door: reed
-    };
-  }
+ function decodeUplink(input) {
+  var data = {};
+  var warnings = [];
+
+
+if (input.fPort == 10) {
+    data.tempA = (input.bytes[0] & 0x80 ? 0xFFFF<<16 : 0) | input.bytes[0]<<8 | input.bytes[1];
+    data.reed = input.bytes[2];
+}
+else {
+    warnings.push("Unsupported fPort");
+}
+return {
+  data: data,
+  warnings: warnings
+};
+}
