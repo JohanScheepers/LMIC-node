@@ -17,7 +17,7 @@
 
 
 if (input.fPort == 10) {
-    data.tempA = (input.bytes[0] & 0x80 ? 0xFFFF<<16 : 0) | input.bytes[0]<<8 | input.bytes[1];
+    data.tempA = ((input.bytes[0] & 0x80 ? 0xFFFF<<16 : 0) | input.bytes[0]<<8 | input.bytes[1])/100;
     data.reed = input.bytes[2];
 }
 else {

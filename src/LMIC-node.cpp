@@ -58,7 +58,7 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
 
-const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
+const uint8_t payloadBufferLength = 4;    // Adjust to fit max payload length
 
 
 #define oneWireAPin 10
@@ -66,7 +66,7 @@ const uint8_t payloadBufferLength = 3;    // Adjust to fit max payload length
 #define greenLed 12
 #define VBATPIN A7
 
-int downlink = 0;
+int downLink = 0;
 int buttonState = 0;
 volatile byte state = LOW;
 
@@ -752,6 +752,8 @@ void processWork(ostime_t doWorkJobTimeStamp)
             buttonState = digitalRead(buttonPin);
             int16_reedSwitch = buttonState;
 
+            int16_t int16_downLink = downLink;
+
             float measuredvbat = analogRead(VBATPIN);
             measuredvbat *= 2;    // we divided by 2, so multiply back
             measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
@@ -779,6 +781,8 @@ void processWork(ostime_t doWorkJobTimeStamp)
             Serial.println(buttonState);
             Serial.print("VBat: " );
             Serial.println(measuredvbat);
+            Serial.print("downLink: " );
+            Serial.println(downLink);
         #endif    
 
         // For simplicity LMIC-node will try to send an uplink
@@ -802,8 +806,13 @@ void processWork(ostime_t doWorkJobTimeStamp)
             payloadBuffer[0] = int16_temperatureA >> 8;
             payloadBuffer[1] = int16_temperatureA;
             payloadBuffer[2] = int16_reedSwitch;
+            payloadBuffer[3] = int16_downLink;
 
-            uint8_t payloadLength = 3;
+            uint8_t payloadLength = 4;
+
+            if (downLink == 1) {
+                downLink = 0;
+            }
 
             scheduleUplink(fPort, payloadBuffer, payloadLength);
         }
@@ -837,13 +846,15 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
 
         digitalWrite(OnboardLed, HIGH);
         digitalWrite(greenLed, HIGH);
-        delay(60000);
+        delay(30000);
         digitalWrite(OnboardLed, LOW);
         digitalWrite(greenLed, LOW);
+        downLink = 1;
         
         
         //printEvent(timestamp, "Counter reset", PrintTarget::All, false);
-    }          
+    }
+          
 }
 
 
