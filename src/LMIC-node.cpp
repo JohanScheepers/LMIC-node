@@ -60,6 +60,10 @@
 
 const uint8_t payloadBufferLength = 4;    // Adjust to fit max payload length
 
+#define rebootPin 12
+
+int downLink = 0;
+
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▀ █ █ █ █
@@ -691,20 +695,20 @@ lmic_tx_error_t scheduleUplink(uint8_t fPort, uint8_t* data, uint8_t dataLength,
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
 
-static volatile uint16_t counter_ = 0;
+// static volatile uint16_t counter_ = 0;
 
-uint16_t getCounterValue()
-{
-    // Increments counter and returns the new value.
-    delay(50);         // Fake this takes some time
-    return ++counter_;
-}
+// uint16_t getCounterValue()
+// {
+//     // Increments counter and returns the new value.
+//     delay(50);         // Fake this takes some time
+//     return ++counter_;
+// }
 
-void resetCounter()
-{
-    // Reset counter to 0
-    counter_ = 0;
-}
+// void resetCounter()
+// {
+//     // Reset counter to 0
+//     counter_ = 0;
+// }
 
 
 void processWork(ostime_t doWorkJobTimeStamp)
@@ -726,8 +730,16 @@ void processWork(ostime_t doWorkJobTimeStamp)
         // The counter is increased automatically by getCounterValue()
         // and can be reset with a 'reset counter' command downlink message.
 
-        uint16_t counterValue = getCounterValue();
+        //uint16_t counterValue = getCounterValue();
         ostime_t timestamp = os_getTime();
+
+        int16_t int16_downLink = downLink;
+
+             int16_t int16_temperatureA;
+            int16_temperatureA = 100*15;
+
+            int16_t int16_reedSwitch;
+            int16_reedSwitch = 0;
 
         #ifdef USE_DISPLAY
             // Interval and Counter values are combined on a single row.
@@ -744,8 +756,10 @@ void processWork(ostime_t doWorkJobTimeStamp)
         #ifdef USE_SERIAL
             printEvent(timestamp, "Input data collected", PrintTarget::Serial);
             printSpaces(serial, MESSAGE_INDENT);
-            serial.print(F("COUNTER value: "));
-            serial.println(counterValue);
+            //serial.print(F("COUNTER value: "));
+            //serial.println(counterValue);
+            Serial.print("downLink: " );
+            Serial.println(downLink);
         #endif    
 
         // For simplicity LMIC-node will try to send an uplink
@@ -765,10 +779,21 @@ void processWork(ostime_t doWorkJobTimeStamp)
         else
         {
             // Prepare uplink payload.
+            // uint8_t fPort = 10;
+            // payloadBuffer[0] = counterValue >> 8;
+            // payloadBuffer[1] = counterValue & 0xFF;
+            // uint8_t payloadLength = 2;
             uint8_t fPort = 10;
-            payloadBuffer[0] = counterValue >> 8;
-            payloadBuffer[1] = counterValue & 0xFF;
-            uint8_t payloadLength = 2;
+            payloadBuffer[0] = int16_temperatureA >> 8;
+            payloadBuffer[1] = int16_temperatureA;
+            payloadBuffer[2] = int16_reedSwitch;
+            payloadBuffer[3] = int16_downLink;
+
+            uint8_t payloadLength = 4;
+
+            if (downLink == 1) {
+                downLink = 0;
+            }
 
             scheduleUplink(fPort, payloadBuffer, payloadLength);
         }
@@ -790,13 +815,18 @@ void processDownlink(ostime_t txCompleteTimestamp, uint8_t fPort, uint8_t* data,
 
     if (fPort == cmdPort && dataLength == 1 && data[0] == resetCmd)
     {
-        #ifdef USE_SERIAL
+#ifdef USE_SERIAL
             printSpaces(serial, MESSAGE_INDENT);
             serial.println(F("Reset cmd received"));
         #endif
         ostime_t timestamp = os_getTime();
-        resetCounter();
-        printEvent(timestamp, "Counter reset", PrintTarget::All, false);
+
+        pinMode(rebootPin, OUTPUT);
+
+        digitalWrite(rebootPin, HIGH);
+        delay(30000);
+        digitalWrite(rebootPin, LOW);
+        downLink = 1;
     }          
 }
 
@@ -847,7 +877,7 @@ void setup()
 
     // Place code for initializing sensors etc. here.
 
-    resetCounter();
+    //resetCounter();
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▀ █ █ █ █
